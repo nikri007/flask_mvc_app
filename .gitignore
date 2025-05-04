@@ -1,6 +1,8 @@
-node_modules 
+# Python .gitignore 
+__pycache__/ 
+*.py[cod] 
+*$py.class 
 .env 
-.env.local 
-logs 
-dist 
-npm-debug.log* 
+venv/ 
+.idea/ 
+.vscode/ 
