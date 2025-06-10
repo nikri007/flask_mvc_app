@@ -1,0 +1,28 @@
+# Backend Python
+backend/__pycache__/
+backend/*.py[cod]
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+backend/uploads/
+backend/files/
+backend/venv/
+backend/env/
+
+# Frontend Node.js
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
