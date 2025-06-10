@@ -1,0 +1,554 @@
+/* Simple, Clean CSS - Easy to Understand */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+}
+
+/* Auth Forms */
+.auth-container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.auth-container h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.form-group input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background: #0056b3;
+}
+
+.link-btn {
+  background: none !important;
+  border: none !important;
+  color: #007bff !important;
+  cursor: pointer;
+  text-decoration: underline;
+  margin: 10px 5px;
+}
+
+.auth-links {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.date-hint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.password-requirements {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Dashboard */
+.dashboard {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header h1 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.header button {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.header button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.header button:hover {
+  background: #f8f9fa;
+}
+
+.logout-btn {
+  background: #dc3545 !important;
+  color: white !important;
+  border-color: #dc3545 !important;
+}
+
+/* Messages */
+.message {
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.message:not(.success):not(.error) {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+/* View Container */
+.view-container {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.view-container h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Drag & Drop Area - COMPLETELY FIXED */
+.drag-drop-area {
+  border: 2px dashed #007bff;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  background: #f8f9fa;
+  cursor: pointer;
+  position: relative; /* Keep contained */
+}
+
+.drag-drop-area.drag-active {
+  border-color: #28a745;
+  background: #d4edda;
+}
+
+.drag-drop-content {
+  position: relative;
+  z-index: 1;
+}
+
+.drag-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.drag-title {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.drag-subtitle {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.drag-details {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.drag-details span {
+  background: #e3f2fd;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  color: #1976d2;
+}
+
+/* NO MORE ABSOLUTE POSITIONING - This was the problem! */
+.browse-btn {
+  background: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.browse-btn:hover {
+  background: #0056b3;
+}
+
+.drag-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(40, 167, 69, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: white;
+  font-size: 24px;
+  z-index: 10;
+}
+
+.drag-overlay-content {
+  text-align: center;
+}
+
+.drag-overlay-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.drag-overlay-text {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Search */
+.search-section {
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.search-input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Files List */
+.files-header h3 {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  background: white;
+}
+
+.item:hover {
+  background: #f8f9fa;
+  border-color: #007bff;
+}
+
+.info {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex: 1;
+}
+
+.name {
+  font-weight: bold;
+  flex: 2;
+}
+
+.size {
+  color: #666;
+  font-size: 14px;
+}
+
+.date {
+  color: #999;
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-green {
+  padding: 8px 12px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-red {
+  padding: 8px 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-green:hover {
+  background: #218838;
+}
+
+.btn-red:hover {
+  background: #c82333;
+}
+
+/* Status */
+.status {
+  text-align: center;
+}
+
+.accessed {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.pending {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.count {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Forms */
+.form, .password-form {
+  max-width: 500px;
+}
+
+.form .form-group, .password-form .form-group {
+  margin-bottom: 15px;
+}
+
+.form input, .form select, .form textarea, .password-form input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form button, .password-form button {
+  background: #007bff;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.form button:hover, .password-form button:hover {
+  background: #0056b3;
+}
+
+/* Empty States */
+.empty, .empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+/* Public Share */
+.public-share {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.public-share.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.public-share h2 {
+  margin-bottom: 20px;
+}
+
+.file-card {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 4px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.file-card p {
+  margin: 10px 0;
+}
+
+.download-btn {
+  background: #28a745;
+  color: white;
+  padding: 15px 25px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 20px 0;
+}
+
+.download-btn:hover {
+  background: #218838;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .auth-container {
+    margin: 20px;
+    padding: 20px;
+  }
+  
+  .header {
+    padding: 15px;
+  }
+  
+  .nav-buttons {
+    justify-content: center;
+  }
+  
+  .drag-drop-area {
+    padding: 30px 15px;
+  }
+  
+  .drag-title {
+    font-size: 18px;
+  }
+  
+  .drag-details {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .info {
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+  }
+  
+  .actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .public-share {
+    margin: 20px;
+    padding: 20px;
+  }
+}
