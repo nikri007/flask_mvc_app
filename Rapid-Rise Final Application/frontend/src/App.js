@@ -18,6 +18,31 @@ function App() {
     else if (resetToken) { setShareToken(resetToken); setView('resetPassword'); }
   }, []);
 
+  useEffect(() => {
+    const interceptor = axios.interceptors.request.use(config => {
+      const currentToken = localStorage.getItem('token');
+      if (currentToken) config.headers.Authorization = `Bearer ${currentToken}`;
+      return config;
+    });
+
+    const responseInterceptor = axios.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          setToken(null);
+          setView('login');
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.request.eject(interceptor);
+      axios.interceptors.response.eject(responseInterceptor);
+    };
+  }, []);
+
   const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
@@ -30,7 +55,6 @@ function App() {
   return <Dashboard token={token} logout={logout} />;
 }
 
-// Compact Auth Screen (Login, Register, Forgot Password)
 function AuthScreen({ setToken, view, setView }) {
   const [data, setData] = useState({});
   const [msg, setMsg] = useState('');
@@ -45,7 +69,7 @@ function AuthScreen({ setToken, view, setView }) {
         localStorage.setItem('token', res.data.token);
         setToken(res.data.token);
       } else {
-        setMsg('Success! Check email for reset link.');
+        setMsg('Reset link sent to email');
         setTimeout(() => setView('login'), 2000);
       }
     } catch (err) {
@@ -54,111 +78,60 @@ function AuthScreen({ setToken, view, setView }) {
   };
 
   const change = (e) => setData({ ...data, [e.target.name]: e.target.value });
-
-  // Convert date from dd/mm/yyyy to yyyy-mm-dd for backend
+  
   const handleDateChange = (e) => {
-    const dateValue = e.target.value;
-    if (dateValue) {
-      // Date input gives yyyy-mm-dd, backend expects yyyy-mm-dd, so no conversion needed
-      setData({ ...data, date_of_birth: dateValue });
+    if (e.target.value) {
+      setData({ ...data, date_of_birth: e.target.value });
     }
   };
 
   return (
     <div className="auth-container">
-      <h2>{view === 'register' ? 'Create Account' : view === 'forgot' ? 'Reset Password' : 'Sign In'}</h2>
-      <form onSubmit={submit} className="auth-form">
+      <h2>{view === 'register' ? 'Register' : view === 'forgot' ? 'Reset Password' : 'Login'}</h2>
+      <form onSubmit={submit}>
         {view === 'register' && (
           <>
-            <div className="form-group">
-              <label>First Name</label>
-              <input name="first_name" type="text" onChange={change} required />
-            </div>
-            <div className="form-group">
-              <label>Last Name</label>
-              <input name="last_name" type="text" onChange={change} required />
-            </div>
-            <div className="form-group">
-              <label>Date of Birth</label>
-              <input 
-                name="date_of_birth" 
-                type="date" 
-                onChange={handleDateChange} 
-                required 
-                placeholder="dd/mm/yyyy"
-                title="Please enter your date of birth in DD/MM/YYYY format"
-              />
-              <small className="date-hint">📅 Select your birth date (DD/MM/YYYY format)</small>
-            </div>
-            <div className="form-group">
-              <label>Email Address</label>
-              <input name="email" type="email" onChange={change} required />
-            </div>
-            <div className="form-group">
-              <label>Password</label>
-              <input name="password" type="password" onChange={change} required />
-            </div>
-            <div className="form-group">
-              <label>Confirm Password</label>
-              <input name="confirm_password" type="password" onChange={change} required />
-            </div>
+            <input name="first_name" placeholder="First Name" onChange={change} required />
+            <input name="last_name" placeholder="Last Name" onChange={change} required />
+            <input name="date_of_birth" type="date" onChange={handleDateChange} required />
+            <input name="email" type="email" placeholder="Email" onChange={change} required />
+            <input name="password" type="password" placeholder="Password" onChange={change} required />
+            <input name="confirm_password" type="password" placeholder="Confirm Password" onChange={change} required />
           </>
         )}
         
         {view === 'login' && (
           <>
-            <div className="form-group">
-              <label>Email Address</label>
-              <input name="email" type="email" onChange={change} required />
-            </div>
-            <div className="form-group">
-              <label>Password</label>
-              <input name="password" type="password" onChange={change} required />
-            </div>
+            <input name="email" type="email" placeholder="Email" onChange={change} required />
+            <input name="password" type="password" placeholder="Password" onChange={change} required />
           </>
         )}
 
         {view === 'forgot' && (
-          <div className="form-group">
-            <label>Email Address</label>
-            <input name="email" type="email" placeholder="Enter your registered email" onChange={change} required />
-          </div>
+          <input name="email" type="email" placeholder="Email" onChange={change} required />
         )}
         
-        <button type="submit" className="submit-btn">
-          {view === 'register' ? 'Create Account' : view === 'forgot' ? 'Send Reset Link' : 'Sign In'}
+        <button type="submit">
+          {view === 'register' ? 'Register' : view === 'forgot' ? 'Send Reset' : 'Login'}
         </button>
       </form>
       
-      {msg && <div className={`message ${msg.includes('Error') ? 'error' : 'success'}`}>{msg}</div>}
+      {msg && <div className="message">{msg}</div>}
       
-      <div className="auth-links">
+      <div className="links">
         {view === 'login' && (
           <>
-            <button onClick={() => setView('register')} className="link-btn">
-              Don't have an account? <strong>Create Account</strong>
-            </button>
-            <button onClick={() => setView('forgot')} className="link-btn">
-              Forgot your password? <strong>Reset Password</strong>
-            </button>
+            <button onClick={() => setView('register')}>Create Account</button>
+            <button onClick={() => setView('forgot')}>Forgot Password</button>
           </>
         )}
-        {view === 'register' && (
-          <button onClick={() => setView('login')} className="link-btn">
-            Already have an account? <strong>Sign In</strong>
-          </button>
-        )}
-        {view === 'forgot' && (
-          <button onClick={() => setView('login')} className="link-btn">
-            Remember your password? <strong>Back to Sign In</strong>
-          </button>
-        )}
+        {view === 'register' && <button onClick={() => setView('login')}>Back to Login</button>}
+        {view === 'forgot' && <button onClick={() => setView('login')}>Back to Login</button>}
       </div>
     </div>
   );
 }
 
-// Reset Password Component
 function ResetPassword({ token }) {
   const [data, setData] = useState({ token, new_password: '', confirm_password: '' });
   const [msg, setMsg] = useState('');
@@ -166,414 +139,271 @@ function ResetPassword({ token }) {
   const submit = async (e) => {
     e.preventDefault();
     if (data.new_password !== data.confirm_password) {
-      setMsg('Passwords do not match!');
+      setMsg('Passwords do not match');
       return;
     }
     try {
       await axios.post('/auth/reset-password', data);
-      setMsg('Password reset successful! Redirecting to login...');
+      setMsg('Password reset successful');
       setTimeout(() => window.location.href = '/', 2000);
     } catch (err) {
       setMsg(err.response?.data?.error || 'Reset failed');
     }
   };
 
-  const change = (e) => setData({...data, [e.target.name]: e.target.value});
-
   return (
     <div className="auth-container">
-      <h2>Reset Your Password</h2>
-      <form onSubmit={submit} className="auth-form">
-        <div className="form-group">
-          <label>New Password</label>
-          <input name="new_password" type="password" onChange={change} required />
-        </div>
-        <div className="form-group">
-          <label>Confirm New Password</label>
-          <input name="confirm_password" type="password" onChange={change} required />
-        </div>
-        <button type="submit" className="submit-btn">Reset Password</button>
+      <h2>Reset Password</h2>
+      <form onSubmit={submit}>
+        <input name="new_password" type="password" placeholder="New Password" 
+               onChange={(e) => setData({...data, [e.target.name]: e.target.value})} required />
+        <input name="confirm_password" type="password" placeholder="Confirm Password" 
+               onChange={(e) => setData({...data, [e.target.name]: e.target.value})} required />
+        <button type="submit">Reset Password</button>
       </form>
-      {msg && <div className={`message ${msg.includes('successful') ? 'success' : 'error'}`}>{msg}</div>}
-      
-      <div className="password-requirements">
-        <p><strong>Password Requirements:</strong></p>
-        <ul>
-          <li>At least 8 characters long</li>
-          <li>One uppercase letter (A-Z)</li>
-          <li>One lowercase letter (a-z)</li>
-          <li>One number (0-9)</li>
-          <li>One special character (!@#$%^&*)</li>
-        </ul>
-      </div>
+      {msg && <div className="message">{msg}</div>}
     </div>
   );
 }
 
-// Main Dashboard
 function Dashboard({ token, logout }) {
   const [view, setView] = useState('files');
   const [files, setFiles] = useState([]);
   const [shares, setShares] = useState([]);
   const [search, setSearch] = useState('');
   const [msg, setMsg] = useState('');
-
-  const headers = { Authorization: `Bearer ${token}` };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     if (view === 'files') loadFiles();
     if (view === 'shares') loadShares();
-  }, [view, search]);
+  }, [view, search, currentPage]);
 
   const loadFiles = async () => {
     try {
-      const res = await axios.get(`/files?search=${search}`, { headers });
+      const res = await axios.get(`/files?search=${search}&page=${currentPage}`);
       setFiles(res.data.files);
-    } catch { setMsg('Error loading files'); }
+      setTotalPages(res.data.pages);
+    } catch (err) { setMsg('Error loading files'); }
   };
 
   const loadShares = async () => {
     try {
-      const res = await axios.get('/share/my-shares', { headers });
+      const res = await axios.get('/share/my-shares');
       setShares(res.data.shares);
-    } catch { setMsg('Error loading shares'); }
+    } catch (err) { setMsg('Error loading shares'); }
   };
 
   const upload = async (e) => {
     const formData = new FormData();
     [...e.target.files].forEach(file => formData.append('files', file));
     try {
-      await axios.post('/files/upload', formData, { headers: {...headers, 'Content-Type': 'multipart/form-data'} });
-      setMsg('Upload successful!'); loadFiles();
-    } catch { setMsg('Upload failed'); }
+      await axios.post('/files/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setMsg('Upload successful');
+      loadFiles();
+    } catch (err) { setMsg('Upload failed'); }
   };
 
   const deleteFile = async (id) => {
-    if (!confirm('Delete file?')) return;
+    if (!window.confirm('Delete file?')) return;
     try {
-      await axios.delete(`/files/${id}`, { headers });
-      setMsg('File deleted'); loadFiles();
-    } catch { setMsg('Delete failed'); }
+      await axios.delete(`/files/${id}`);
+      setMsg('File deleted');
+      loadFiles();
+    } catch (err) { setMsg('Delete failed'); }
   };
 
   const download = async (id, name) => {
     try {
-      const res = await axios.get(`/files/${id}/download`, { headers, responseType: 'blob' });
-      const url = URL.createObjectURL(new Blob([res.data]));
+      const res = await axios.get(`/files/${id}/download`, { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data);
       const a = document.createElement('a');
       a.href = url; a.download = name; a.click();
-    } catch { setMsg('Download failed'); }
+      URL.revokeObjectURL(url);
+    } catch (err) { setMsg('Download failed'); }
   };
 
   return (
     <div className="dashboard">
       <div className="header">
         <h1>File Share</h1>
-        <div className="nav-buttons">
+        <div>
           {['files', 'shares', 'share', 'password'].map(v => (
             <button key={v} onClick={() => setView(v)} className={view === v ? 'active' : ''}>
-              {v === 'files' ? 'Files' : v === 'shares' ? 'Shares' : v === 'share' ? 'Share' : 'Password'}
+              {v.charAt(0).toUpperCase() + v.slice(1)}
             </button>
           ))}
-          <button onClick={logout} className="logout-btn">Logout</button>
+          <button onClick={logout}>Logout</button>
         </div>
       </div>
 
       {msg && <div className="message">{msg}</div>}
 
-      {view === 'files' && <FilesView files={files} search={search} setSearch={setSearch} upload={upload} deleteFile={deleteFile} download={download} />}
+      {view === 'files' && <FilesView files={files} search={search} setSearch={setSearch} upload={upload} deleteFile={deleteFile} download={download} currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />}
       {view === 'shares' && <SharesView shares={shares} />}
-      {view === 'share' && <ShareView token={token} setMsg={setMsg} files={files} />}
-      {view === 'password' && <PasswordView token={token} setMsg={setMsg} />}
+      {view === 'share' && <ShareView setMsg={setMsg} files={files} />}
+      {view === 'password' && <PasswordView setMsg={setMsg} />}
     </div>
   );
 }
 
-// Files View with Properly Contained Drag & Drop
-function FilesView({ files, search, setSearch, upload, deleteFile, download }) {
+function FilesView({ files, search, setSearch, upload, deleteFile, download, currentPage, setCurrentPage, totalPages }) {
   const [dragActive, setDragActive] = useState(false);
 
   const handleDrag = (e) => {
     e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+    setDragActive(e.type === "dragenter" || e.type === "dragover");
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    e.stopPropagation();
     setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      upload({ target: { files: e.dataTransfer.files } });
-    }
-  };
-
-  const handleFileSelect = (e) => {
-    e.stopPropagation(); // Prevent event bubbling
-    upload(e);
-  };
-
-  const handleDragAreaClick = (e) => {
-    // Only trigger file input if clicking directly on drag area, not on buttons
-    if (e.target.classList.contains('drag-drop-area') || 
-        e.target.classList.contains('drag-drop-content') ||
-        e.target.classList.contains('drag-icon') ||
-        e.target.classList.contains('drag-title') ||
-        e.target.classList.contains('drag-subtitle')) {
-      document.getElementById('file-upload').click();
-    }
+    if (e.dataTransfer.files?.[0]) upload({ target: { files: e.dataTransfer.files } });
   };
 
   return (
-    <div className="view-container">
-      {/* Properly Isolated Drag & Drop Area */}
-      <div 
-        className={`drag-drop-area ${dragActive ? 'drag-active' : ''}`}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-        onClick={handleDragAreaClick}
-      >
-        <div className="drag-drop-content">
-          <div className="drag-icon">📂</div>
-          <h3 className="drag-title">Drag & Drop Files Here</h3>
-          <p className="drag-subtitle">or click to browse files</p>
-          <div className="drag-details">
-            <span>📁 Multiple files supported</span>
-            <span>📏 Max 100MB per file</span>
-            <span>🔒 Secure upload</span>
-          </div>
-          {/* File input - NO absolute positioning */}
-          <input 
-            type="file" 
-            multiple 
-            onChange={handleFileSelect} 
-            id="file-upload" 
-            style={{ display: 'none' }}
-          />
-          <button 
-            type="button"
-            className="browse-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              document.getElementById('file-upload').click();
-            }}
-          >
-            Choose Files
-          </button>
-        </div>
-        {dragActive && (
-          <div className="drag-overlay">
-            <div className="drag-overlay-content">
-              <div className="drag-overlay-icon">📥</div>
-              <div className="drag-overlay-text">Drop files to upload</div>
-            </div>
-          </div>
-        )}
+    <div>
+      <div className={`drag-area ${dragActive ? 'active' : ''}`}
+           onDragEnter={handleDrag} onDragOver={handleDrag} onDragLeave={handleDrag} onDrop={handleDrop}
+           onClick={() => document.getElementById('file-upload').click()}>
+        <p>Drag & Drop Files or Click to Browse</p>
+        <input type="file" multiple onChange={upload} id="file-upload" style={{ display: 'none' }} />
       </div>
 
-      {/* Search Bar */}
-      <div className="search-section">
-        <input 
-          type="text" 
-          placeholder="🔍 Search your files..." 
-          value={search} 
-          onChange={(e) => setSearch(e.target.value)}
-          className="search-input"
-        />
-      </div>
+      <input type="text" placeholder="Search files..." value={search} onChange={(e) => setSearch(e.target.value)} />
       
-      {/* Files List */}
-      <div className="files-header">
-        <h3>Your Files ({files.length})</h3>
-      </div>
-      
-      <div className="list">
+      <div className="files-list">
         {files.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">📁</div>
-            <h4>No files yet</h4>
-            <p>Upload your first file using the drag & drop area above</p>
-          </div>
+          <p>No files uploaded yet</p>
         ) : (
           files.map(f => (
-            <div key={f.id} className="item">
-              <div className="info">
-                <span className="name">📄 {f.filename}</span>
-                <span className="size">{(f.size/1024/1024).toFixed(2)}MB</span>
-                <span className="date">{new Date(f.created_at).toLocaleDateString()}</span>
-              </div>
-              <div className="actions">
-                <button onClick={() => download(f.id, f.filename)} className="btn-green">
-                 ⬇️ Download
-                </button>
-                <button onClick={() => deleteFile(f.id)} className="btn-red">
-                  🗑️ Delete
-                </button>
+            <div key={f.id} className="file-item">
+              <span>{f.filename} ({(f.size/1024/1024).toFixed(2)}MB)</span>
+              <div>
+                <button onClick={() => download(f.id, f.filename)}>Download</button>
+                <button onClick={() => deleteFile(f.id)}>Delete</button>
               </div>
             </div>
           ))
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
+            Previous
+          </button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-// Shares View
 function SharesView({ shares }) {
   return (
-    <div className="view-container">
+    <div>
       <h3>My Shared Files</h3>
-      <div className="list">
-        {shares.length === 0 ? (
-          <div className="empty">No shared files</div>
-        ) : (
-          shares.map(s => (
-            <div key={s.id} className="item">
-              <div className="info">
-                <span className="name">{s.file_name}</span>
-                <span className="email">{s.recipient_email}</span>
-                <span className="date">{new Date(s.created_at).toLocaleDateString()}</span>
-              </div>
-              <div className="status">
-                <span className={s.accessed ? 'accessed' : 'pending'}>
-                  {s.accessed ? '✅ Accessed' : '⏳ Pending'}
-                </span>
-                <span className="count">Views: {s.access_count}</span>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      {shares.length === 0 ? (
+        <p>No shared files</p>
+      ) : (
+        shares.map(s => (
+          <div key={s.id} className="share-item">
+            <span>{s.file_name} → {s.recipient_email}</span>
+            <span>{s.accessed ? 'Accessed' : 'Pending'} (Views: {s.access_count})</span>
+          </div>
+        ))
+      )}
     </div>
   );
 }
 
-// Share File View
-function ShareView({ token, setMsg, files }) {
+function ShareView({ setMsg, files }) {
   const [data, setData] = useState({ file_id: '', recipient_email: '', expiration_hours: '24', message: '' });
 
   const submit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/share/create', data, { headers: { Authorization: `Bearer ${token}` } });
-      setMsg('File shared successfully! Email sent to recipient.');
+      await axios.post('/share/create', data);
+      setMsg('File shared successfully');
       setData({ file_id: '', recipient_email: '', expiration_hours: '24', message: '' });
     } catch (err) {
       setMsg(err.response?.data?.error || 'Share failed');
     }
   };
 
-  const change = (e) => setData({ ...data, [e.target.name]: e.target.value });
-
   return (
-    <div className="view-container">
+    <div>
       <h3>Share a File</h3>
       {files.length === 0 ? (
-        <div className="empty">Upload files first to share them</div>
+        <p>Upload files first</p>
       ) : (
-        <form onSubmit={submit} className="form">
-          <div className="form-group">
-            <label>Select File to Share</label>
-            <select name="file_id" value={data.file_id} onChange={change} required>
-              <option value="">Choose a file...</option>
-              {files.map(f => (
-                <option key={f.id} value={f.id}>
-                  {f.filename} ({(f.size/1024/1024).toFixed(2)}MB)
-                </option>
-              ))}
-            </select>
-          </div>
+        <form onSubmit={submit}>
+          <select name="file_id" value={data.file_id} onChange={(e) => setData({ ...data, [e.target.name]: e.target.value })} required>
+            <option value="">Choose file...</option>
+            {files.map(f => <option key={f.id} value={f.id}>{f.filename}</option>)}
+          </select>
           
-          <div className="form-group">
-            <label>Recipient Email Address</label>
-            <input name="recipient_email" type="email" value={data.recipient_email} onChange={change} required />
-          </div>
+          <input name="recipient_email" type="email" placeholder="Recipient Email" value={data.recipient_email} 
+                 onChange={(e) => setData({ ...data, [e.target.name]: e.target.value })} required />
           
-          <div className="form-group">
-            <label>Link Expiration Time</label>
-            <select name="expiration_hours" value={data.expiration_hours} onChange={change} required>
-              <option value="1">1 Hour</option>
-              <option value="6">6 Hours</option>
-              <option value="24">1 Day</option>
-              <option value="168">1 Week</option>
-              <option value="720">1 Month</option>
-            </select>
-          </div>
+          <select name="expiration_hours" value={data.expiration_hours} 
+                  onChange={(e) => setData({ ...data, [e.target.name]: e.target.value })}>
+            <option value="1">1 Hour</option>
+            <option value="6">6 Hours</option>
+            <option value="24">1 Day</option>
+            <option value="168">1 Week</option>
+            <option value="720">1 Month</option>
+          </select>
           
-          <div className="form-group">
-            <label>Message (Optional)</label>
-            <textarea name="message" placeholder="Add a personal message for the recipient..." value={data.message} onChange={change} rows="4" />
-          </div>
+          <textarea name="message" placeholder="Optional message" value={data.message} 
+                    onChange={(e) => setData({ ...data, [e.target.name]: e.target.value })} />
           
-          <button type="submit" className="submit-btn">
-            📤 Share File
-          </button>
+          <button type="submit">Share File</button>
         </form>
       )}
     </div>
   );
 }
 
-// Change Password View
-function PasswordView({ token, setMsg }) {
+function PasswordView({ setMsg }) {
   const [data, setData] = useState({ old_password: '', new_password: '', confirm_password: '' });
 
   const submit = async (e) => {
     e.preventDefault();
     if (data.new_password !== data.confirm_password) {
-      setMsg('New passwords do not match!'); return;
+      setMsg('Passwords do not match');
+      return;
     }
     try {
-      await axios.post('/auth/change-password', data, { headers: { Authorization: `Bearer ${token}` } });
-      setMsg('Password changed successfully!');
+      await axios.post('/auth/change-password', data);
+      setMsg('Password changed successfully');
       setData({ old_password: '', new_password: '', confirm_password: '' });
     } catch (err) {
       setMsg(err.response?.data?.error || 'Failed to change password');
     }
   };
 
-  const change = (e) => setData({ ...data, [e.target.name]: e.target.value });
-
   return (
-    <div className="view-container">
+    <div>
       <h3>Change Password</h3>
-      <form onSubmit={submit} className="password-form">
-        <div className="form-group">
-          <label>Current Password</label>
-          <input name="old_password" type="password" value={data.old_password} onChange={change} required />
-        </div>
-        <div className="form-group">
-          <label>New Password</label>
-          <input name="new_password" type="password" value={data.new_password} onChange={change} required />
-        </div>
-        <div className="form-group">
-          <label>Confirm New Password</label>
-          <input name="confirm_password" type="password" value={data.confirm_password} onChange={change} required />
-        </div>
-        <button type="submit" className="submit-btn">Change Password</button>
+      <form onSubmit={submit}>
+        <input name="old_password" type="password" placeholder="Current Password" value={data.old_password} 
+               onChange={(e) => setData({ ...data, [e.target.name]: e.target.value })} required />
+        <input name="new_password" type="password" placeholder="New Password" value={data.new_password} 
+               onChange={(e) => setData({ ...data, [e.target.name]: e.target.value })} required />
+        <input name="confirm_password" type="password" placeholder="Confirm Password" value={data.confirm_password} 
+               onChange={(e) => setData({ ...data, [e.target.name]: e.target.value })} required />
+        <button type="submit">Change Password</button>
       </form>
-      <div className="password-requirements">
-        <p><strong>Password Requirements:</strong></p>
-        <ul>
-          <li>At least 8 characters long</li>
-          <li>One uppercase letter (A-Z)</li>
-          <li>One lowercase letter (a-z)</li>
-          <li>One number (0-9)</li>
-          <li>One special character (!@#$%^&*)</li>
-        </ul>
-      </div>
     </div>
   );
 }
 
-// Public Share Component
 function PublicShare({ token }) {
   const [info, setInfo] = useState(null);
   const [msg, setMsg] = useState('');
@@ -583,39 +413,36 @@ function PublicShare({ token }) {
       try {
         const res = await axios.get(`/share/public/${token}`);
         setInfo(res.data);
-      } catch {
+      } catch (err) {
         setMsg('Share not found or expired');
       }
     };
     load();
-  }, []);
+  }, [token]);
 
   const download = async () => {
     try {
       const res = await axios.get(`/share/public/${token}/download`, { responseType: 'blob' });
-      const url = URL.createObjectURL(new Blob([res.data]));
+      const url = URL.createObjectURL(res.data);
       const a = document.createElement('a');
       a.href = url; a.download = info.filename; a.click();
-    } catch {
+      URL.revokeObjectURL(url);
+    } catch (err) {
       setMsg('Download failed');
     }
   };
 
-  if (msg) return <div className="public-share error">{msg}</div>;
-  if (!info) return <div className="public-share">Loading...</div>;
+  if (msg) return <div className="error">{msg}</div>;
+  if (!info) return <div>Loading...</div>;
 
   return (
     <div className="public-share">
-      <h2>📁 Shared File</h2>
-      <div className="file-card">
-        <p><strong>File:</strong> {info.filename}</p>
-        <p><strong>Size:</strong> {(info.size/1024/1024).toFixed(2)}MB</p>
-        <p><strong>From:</strong> {info.sender}</p>
-        <p><strong>Expires:</strong> {new Date(info.expires_at).toLocaleString()}</p>
-        {info.message && <p><strong>Message:</strong> {info.message}</p>}
-      </div>
-      <button onClick={download} className="download-btn">Download File</button>
-      {msg && <p>{msg}</p>}
+      <h2>Shared File</h2>
+      <p>File: {info.filename}</p>
+      <p>Size: {(info.size/1024/1024).toFixed(2)}MB</p>
+      <p>From: {info.sender}</p>
+      {info.message && <p>Message: {info.message}</p>}
+      <button onClick={download}>Download File</button>
     </div>
   );
 }
